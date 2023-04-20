@@ -14,8 +14,8 @@ from error_helpers import (
     hostname_error,
 )
 
-def upload_model(model: Any, *, token: str, name: str=None, 
-                description: str=None, score: float=None, hostname: str=None) -> None:
+def upload_model(model: Any, *, token: str, name: str='', 
+                description: str='', score: float=0.0, hostname: str=None) -> None:
     if hostname is None:
         print("Warning: No hostname provided!")
         print(f"Defaulting to {DEFAULT_HOST!r} -- explicitly specify this host to silence this warning.\n")
@@ -47,7 +47,17 @@ def upload_model(model: Any, *, token: str, name: str=None,
         ),
     )
     
-    request = requests.post(hostname + CREATE_AUTO_PATH, files=upload_files)
+    try:
+        request = requests.post(hostname + CREATE_AUTO_PATH, files=upload_files, timeout=1.5)
+    except requests.exceptions.ConnectTimeout:
+        print(f"Took too long to connect to url {hostname + CREATE_AUTO_PATH!r}. Make sure your hostname is correct. ")
+        return
+    except Exception as e:
+        print("Error while connecting to url -- check hostname?\n")
+        print(e)
+        print(type(e))
+        return
+    
     response = request.content.decode('utf-8')
     
     if response.startswith("ERR"):
