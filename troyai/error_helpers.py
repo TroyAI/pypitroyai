@@ -1,4 +1,4 @@
-from constants import *
+from .constants import *
 
 def token_error(token: str) -> bool:
     if len(token) != 16 or any(character not in BASE62 for character in token):
